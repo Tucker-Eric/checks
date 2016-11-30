@@ -16,7 +16,13 @@ class Check
 
     public function __get($param)
     {
-        return $this->attributes[$param] ?? null;
+        $val = $this->attributes[$param] ?? null;
+
+        if(method_exists($this, $method = 'get'.studly_case($param).'Attribute')) {
+            return call_user_func([$this, $method], $val);
+        }
+
+        return $val;
     }
 
     public function __set($param, $val)
@@ -29,6 +35,9 @@ class Check
         return array_key_exists($param, $this->attributes);
     }
 
-
+    public function getAccountInfoAttribute()
+    {
+        return "t".$this->routing_number."t".$this->account_number."o".$this->check_number;
+    }
 
 }
