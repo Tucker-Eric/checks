@@ -256,7 +256,7 @@ class Writer
      */
     public function printMemoLine()
     {
-        $this->line($this->left(), $this->top(1.97), 2.5);
+        $this->line($this->left(), $this->top(1.97), 3);
         $this->pdf->SetXY($this->left(), $this->top(1.875));
         $this->pdf->Cell(1, (7 / 72), 'Memo');
 
@@ -301,7 +301,8 @@ class Writer
             ->writeAmount()
             ->writeMemo()
             ->writeAccountInfo()
-            ->writeSignature();
+            ->writeSignature()
+            ->writeStubInfo();
     }
 
     /**
@@ -367,8 +368,8 @@ class Writer
     {
         if ($this->check->memo !== null) {
             $this->pdf->SetFont('Courier', '', 8);
-            $this->pdf->SetXY($this->left(0.3), $this->top(1.78));
-            $this->pdf->Cell(1, .25, $this->check->memo);
+            $this->pdf->SetXY($this->left(0.36), $this->top(1.63));
+            $this->pdf->drawTextBox($this->check->memo, 2.75, (1 / 3), 'L', 'B', false);
         }
 
         return $this;
@@ -380,7 +381,7 @@ class Writer
     public function writeAccountInfo()
     {
         $this->pdf->SetFont('Micr', '', 10);
-        $this->pdf->SetXY($this->left(1.5), $this->top(2.22));
+        $this->pdf->SetXY($this->left(0.5), $this->top(2.22));
         $this->pdf->Cell(5, (10 / 72), $this->check->account_info);
 
         return $this;
@@ -394,15 +395,10 @@ class Writer
         if ($this->check->signature !== null) {
             if (strtolower(substr($this->check->signature, - 3)) === 'png') {
                 $sig_offset = 1.75;  // width of signature
-                $this->pdf->Image(
-                    $this->check->signature,
-                    $this->right(2),
-                    $this->top(1.25),
-                    $sig_offset
-                );
+                $this->pdf->Image($this->check->signature, $this->right(1.75), $this->top(1.25), $sig_offset);
             } else {
                 $this->pdf->SetFont('Arial', 'i', 10);
-                $this->pdf->SetXY($this->x + $this->cellMargin('left') + 3.4, $this->y + 2.01);
+                $this->pdf->SetXY($this->left(3.15), $this->top(1.76));
                 $this->pdf->Cell(1, .25, $this->check->signature);
 
             }
@@ -412,7 +408,24 @@ class Writer
     }
 
     /**
-     *
+     * @return $this
+     */
+    public function writeStubInfo()
+    {
+        $this->pdf->SetFont('Courier', '', 9);
+        // First partition
+        foreach([3.5, 7] as $top) {
+            $this->pdf->SetXY($this->left(), $this->top($top));
+            $this->pdf->drawTextBox($this->check->check_stub, $this->middle(), 1, 'L', 'T', false);
+            $this->pdf->SetXY($this->right(), $this->top($top));
+            $this->pdf->Cell(1, .25, $this->check->check_number);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return $this
      */
     public function writePreauthDisclaimer()
     {
@@ -421,6 +434,8 @@ class Writer
             $this->pdf->SetXY($this->x + $this->cellMargin('left') + 3.3, $this->y + 2.155);
             $this->pdf->Cell(1, .25, "This check is pre-authorized by your depositor");
         }
+
+        return $this;
     }
 
     /**

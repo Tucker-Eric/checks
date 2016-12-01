@@ -8,10 +8,14 @@ namespace CheckWriter;
  * Author:  Olivier PLATHEY                                                     *
  *******************************************************************************/
 
+use CheckWriter\Traits\TextBox;
+
 define('FPDF_VERSION', '1.81');
 
 class FPDF
 {
+    use TextBox;
+
     protected $page;               // current page number
 
     protected $n;                  // current object number
